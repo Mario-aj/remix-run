@@ -28,7 +28,7 @@ class File {
 
   static isValid(csvString, options = DEFAULT_OPTIONS) {
     const [header, ...fileWithoutHeader] = csvString.split('\n');
-    const isHeaderValid = header === options.fields.join(',');
+    const isHeaderValid = header === options.fields.join(', ');
 
     if (!isHeaderValid) {
       return {
@@ -36,11 +36,25 @@ class File {
         valid: false,
       };
     }
+
+    const isContentLengthAccepted =
+      fileWithoutHeader.length > 0 &&
+      fileWithoutHeader.length <= options.maxLines;
+
+    if (!isContentLengthAccepted) {
+      return {
+        error: error.FILE_LENGTH_ERROR_MESSAGE,
+        valid: false,
+      };
+    }
+
+    return { valid: true };
   }
 }
 
 (async () => {
-  // const result = await File.csvToJson('../mocks/threeItems-valid.csv');
-  const result = await File.csvToJson('../mocks/invalid-header.csv');
+  const result = await File.csvToJson('../mocks/threeItems-valid.csv');
+  // const result = await File.csvToJson('../mocks/invalid-header.csv');
+  // const result = await File.csvToJson('../mocks/fourItems-invalid.csv');
   console.log(result);
 })();
