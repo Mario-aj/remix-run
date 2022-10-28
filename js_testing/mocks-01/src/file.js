@@ -1,5 +1,4 @@
 const { readFile } = require('fs/promises');
-const { join } = require('path');
 
 const { error } = require('./constants');
 
@@ -14,16 +13,14 @@ class File {
     const validate = this.isValid(content);
 
     if (!validate.valid) {
-      throw Error(validate.error);
+      throw new Error(validate.error);
     }
 
     return content;
   }
 
   static async getFileContent(filePath) {
-    const filename = join(__dirname, filePath);
-
-    return (await readFile(filename)).toString('utf-8');
+    return (await readFile(filePath)).toString('utf-8');
   }
 
   static isValid(csvString, options = DEFAULT_OPTIONS) {
@@ -52,9 +49,4 @@ class File {
   }
 }
 
-(async () => {
-  const result = await File.csvToJson('../mocks/threeItems-valid.csv');
-  // const result = await File.csvToJson('../mocks/invalid-header.csv');
-  // const result = await File.csvToJson('../mocks/fourItems-invalid.csv');
-  console.log(result);
-})();
+module.exports = File;
