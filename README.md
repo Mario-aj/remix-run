@@ -1,8 +1,3 @@
-# js-expert-course
+# TIL_2023 about Remix-run.
 
-JSEXPERT COURSE
-
-## Summary
-
-- Javascript testing
-  1. Working with mocks
+- Remix-joke
