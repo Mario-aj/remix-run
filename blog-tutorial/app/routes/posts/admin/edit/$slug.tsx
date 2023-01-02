@@ -1,14 +1,17 @@
 import invariant from "tiny-invariant";
-import { redirect, json } from "@remix-run/node";
-import { useActionData, useTransition } from "@remix-run/react";
-
 import type { Post } from "@prisma/client";
-import type { ActionArgs } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import { useActionData, useLoaderData, useTransition } from "@remix-run/react";
 
-import { createPost } from "~/models/post.server";
 import PostForm from "~/components/PostForm";
+import { getPost, updatePost } from "~/models/post.server";
 
-export const action = async ({ request }: ActionArgs) => {
+export const loader = async ({ params }: LoaderArgs) => {
+  return json({ post: await getPost(params.slug as string) });
+};
+
+export const action = async ({ request, params }: ActionArgs) => {
   const form = await request.formData();
 
   const title = form.get("title");
@@ -29,17 +32,25 @@ export const action = async ({ request }: ActionArgs) => {
   invariant(typeof slug === "string", "slug must be a string");
   invariant(typeof markdown === "string", "markdown must be a string");
 
-  await createPost({ title, markdown, slug } as Pick<
+  await updatePost({ title, markdown, slug, oldSlug: params.slug } as Pick<
     Post,
     "slug" | "markdown" | "title"
-  >);
+  > & { oldSlug: string });
   return redirect("/posts/admin");
 };
 
-export default function NewPost() {
+export default function EditPost() {
+  const { post } = useLoaderData<typeof loader>();
   const errors = useActionData<typeof action>();
+
   const transition = useTransition();
   const isCreating = Boolean(transition.submission);
 
-  return <PostForm errors={errors} isCreating={isCreating} />;
+  return (
+    <PostForm
+      errors={errors}
+      isCreating={isCreating}
+      defaultValues={post || undefined}
+    />
+  );
 }
